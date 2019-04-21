@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "WOM_Gamemode.generated.h"
 
+
 /**
  * 
  */
@@ -14,4 +15,6 @@ class WAROFMARK_API AWOM_Gamemode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+	virtual void StartPlay() override;
+	TSubclassOf<APawn> PlayerCharacterBase;
 };
