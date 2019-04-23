@@ -17,31 +17,40 @@ public:
 	// Sets default values for this actor's properties
 	AItemBase();
 
+	//被拾取时调用函数
 	void BePicked(APlayerCharacterBase* player);
 
-	//Booleans to control pick/drop.
+	//可被拾取：在地上
 	bool bCanBePicked;
+	//可被丢弃：在背包中
 	bool bCanBeDroped;
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//Static Mesh pre-Called, can be edited in BP.
+	//SM
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
-	//Sphere Collison pre-Called, can be edited in BP.
+	//球形碰撞
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 
-	//Player Begin Move Nearly from this item.
-	void PlayerBeginOverlap();
+	//临近的所有玩家
+	UPROPERTY(EditAnywhere, Category = "Attribute")
+	TArray<APlayerCharacterBase*> NearlyPlayers;
+
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	//当玩家接近
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
+	//当玩家离开
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 };

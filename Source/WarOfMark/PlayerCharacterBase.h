@@ -8,6 +8,7 @@
 
 
 class AItemBase;
+class UBuffStateComponent;
 
 UCLASS()
 class WAROFMARK_API APlayerCharacterBase : public ACharacter
@@ -18,27 +19,57 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacterBase();
 
+	//可拾取物品栈添加
 	void PickableItemsAdd(AItemBase* item);
+	//可拾取物品栈移除
+	void PickableItemsRemove(AItemBase* item);
+
 	TArray<AItemBase*> GetBag();
-	int GetBagNum();
+
+	//获取背包是否已满
 	bool IsBagFull();
 
+	//尝试拾取
 	void TryPick();
+	//拾取成功
 	void PickSuccess();
+
+	//Init Hp
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	int InitHp;
+
+	//Init Armor
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	int InitArmor;
+
+	//Init Move Speed
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	int InitMoveSpeed;
+
+	UBuffStateComponent* GetBuffState();
+	
+
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//可拾取物品栈
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<AItemBase*> PickableItems;
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
-		int PickableItemsNum;
+
+	//背包数组
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<AItemBase*> Bag;
+
+	//背包满数量
 	UPROPERTY(EditAnywhere, Category = "Attributes")
-		int BagNum;
+	int FullBagNum;
+
+	//Player carried BuffStateComponent
 	UPROPERTY(EditAnywhere, Category = "Attributes")
-		int FullBagNum;
+		UBuffStateComponent* PlayerBuffState;
 
 public:	
 	// Called every frame
@@ -55,4 +86,12 @@ public:
 	UFUNCTION()
 	void MoveRight(float Value);
 
+
+	// 按下按键时设置跳跃标记。
+	UFUNCTION()
+		void StartJump();
+
+	// 松开按键时清除跳跃标记。
+	UFUNCTION()
+		void StopJump();
 };

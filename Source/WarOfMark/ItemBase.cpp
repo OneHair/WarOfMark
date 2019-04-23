@@ -15,7 +15,7 @@ AItemBase::AItemBase()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	bCanBePicked = false;
+	bCanBePicked = true;
 	bCanBeDroped = false;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
@@ -27,19 +27,6 @@ AItemBase::AItemBase()
 	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	SphereComp->SetupAttachment(MeshComp);
-}
-
-void AItemBase::BePicked(APlayerCharacterBase* player)
-{
-	if (bCanBePicked && (!player->IsBagFull())) {
-		player->PickSuccess();
-		//what will happend when item be picked here!!!!!!!
-	}
-	else{
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("This can't be picked now!"));
-		}
-	}
 }
 
 // Called when the game starts or when spawned
@@ -62,13 +49,37 @@ void AItemBase::NotifyActorBeginOverlap(AActor * OtherActor)
 	
 	APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
 	if (MyCharacter) {
-		if (! MyCharacter->IsBagFull()) {
-			bCanBePicked = true;
-			if (GEngine) {
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I can be picked this now!"));
-			}
-			MyCharacter->PickableItemsAdd(this);
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Someone nearly!"));
 		}
+		NearlyPlayers.Add(MyCharacter);
+		MyCharacter->PickableItemsAdd(this);
 	}
 }
 
+void AItemBase::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorEndOverlap(OtherActor);
+
+	APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
+	if (MyCharacter) {
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Someone away!"));
+		}
+		MyCharacter->PickableItemsRemove(this);
+		NearlyPlayers.RemoveSingle(MyCharacter);
+	}
+
+}
+
+void AItemBase::BePicked(APlayerCharacterBase* player)
+{
+	//what will happend when item be picked here!!!!!!!
+
+	bCanBePicked = false;
+	bCanBeDroped = true;
+
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I'm be picked"));
+	}
+}
