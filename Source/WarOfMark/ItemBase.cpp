@@ -7,7 +7,6 @@
 #include "PlayerCharacterBase.h"
 #include "Engine.h"
 
-class USphereComponent;
 
 // Sets default values
 AItemBase::AItemBase()

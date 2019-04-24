@@ -47,6 +47,7 @@ public:
 	int InitMoveSpeed;
 
 	UBuffStateComponent* GetBuffState();
+
 	
 
 
@@ -68,8 +69,10 @@ protected:
 	int FullBagNum;
 
 	//Player carried BuffStateComponent
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-		UBuffStateComponent* PlayerBuffState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UBuffStateComponent* PlayerBuffState;
+
+	
 
 public:	
 	// Called every frame

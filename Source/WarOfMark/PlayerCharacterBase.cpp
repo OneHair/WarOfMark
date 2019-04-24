@@ -21,8 +21,8 @@ APlayerCharacterBase::APlayerCharacterBase()
 
 	//创建新的BuffState
 	PlayerBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
-
-
+	//PlayerBuffState = NewObject<UBuffStateComponent>(TEXT("CurrentBuffState"));
+	
 }
 
 //可拾取物品栈添加
@@ -96,13 +96,17 @@ void APlayerCharacterBase::BeginPlay()
 	Super::BeginPlay();
 
 	if (GEngine) {
-		//FPlatformProcess::Sleep(1000);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("We are using PlayerCharacterBase!"));
 		
 	}
 
 	//Init BuffState.
+	AddInstanceComponent(PlayerBuffState);
 	if (GetBuffState()) {
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Playerbuffstate exist."));
+
+		}
 		GetBuffState()->Hp = InitHp;
 		GetBuffState()->Armor = InitArmor;
 		GetBuffState()->MoveSpeed = InitMoveSpeed;
