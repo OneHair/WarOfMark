@@ -4,7 +4,9 @@
 #include "ItemBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "BuffStateComponent.h"
 #include "PlayerCharacterBase.h"
+#include "Enum/ItemKindsEnum.h"
 #include "Engine.h"
 
 
@@ -19,6 +21,7 @@ AItemBase::AItemBase()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetSimulatePhysics(true);
 	RootComponent = MeshComp;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -26,12 +29,36 @@ AItemBase::AItemBase()
 	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	SphereComp->SetupAttachment(MeshComp);
+
+	ItemKind = EItemKindsEnum::VE_MagicStock;
+
+	//创建新的BuffState
+	ItemBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
+}
+
+UBuffStateComponent* AItemBase::GetBuffState()
+{
+	if (ItemBuffState) {
+		return ItemBuffState;
+	}
+	return nullptr;
 }
 
 // Called when the game starts or when spawned
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//Init BuffState.
+	AddInstanceComponent(ItemBuffState);
+
+	if (GetBuffState()) {
+		GetBuffState()->Hp = 0;
+		GetBuffState()->Armor = 0;
+		GetBuffState()->MoveSpeed = 0;
+		GetBuffState()->Vertigo = 0;
+		GetBuffState()->Silence = 0;
+	}
 	
 }
 
@@ -42,33 +69,38 @@ void AItemBase::Tick(float DeltaTime)
 
 }
 
+//Any Player begin overlap
 void AItemBase::NotifyActorBeginOverlap(AActor * OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	
-	APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
-	if (MyCharacter) {
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Someone nearly!"));
+
+	if (bCanBePicked) {
+		APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
+		if (MyCharacter) {
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Someone nearly!"));
+			}
+			NearlyPlayers.Add(MyCharacter);
+			MyCharacter->PickableItemsAdd(this);
 		}
-		NearlyPlayers.Add(MyCharacter);
-		MyCharacter->PickableItemsAdd(this);
 	}
 }
 
+//Any Player end overlap
 void AItemBase::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 
-	APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
-	if (MyCharacter) {
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Someone away!"));
+	if (bCanBePicked) {
+		APlayerCharacterBase* MyCharacter = Cast<APlayerCharacterBase>(OtherActor);
+		if (MyCharacter) {
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Someone away!"));
+			}
+			MyCharacter->PickableItemsRemove(this);
+			NearlyPlayers.RemoveSingle(MyCharacter);
 		}
-		MyCharacter->PickableItemsRemove(this);
-		NearlyPlayers.RemoveSingle(MyCharacter);
 	}
-
 }
 
 void AItemBase::BePicked(APlayerCharacterBase* player)
@@ -79,6 +111,7 @@ void AItemBase::BePicked(APlayerCharacterBase* player)
 	bCanBeDroped = true;
 
 	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I'm be picked"));
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, TEXT("I'm be picked"));
 	}
+	Destroy();
 }

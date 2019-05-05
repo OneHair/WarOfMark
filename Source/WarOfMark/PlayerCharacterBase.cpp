@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PlayerCharacterBase.h"
 #include "Engine.h"
 #include "ItemBase.h"
+#include "Items/MagicStock.h"
+#include "Items/Treasure.h"
+#include "Items/Catalyst.h"
 #include "BuffStateComponent.h"
+#include "Enum/ItemKindsEnum.h"
+#include "Items/MagicStock.h"
 
 // Sets default values
 APlayerCharacterBase::APlayerCharacterBase()
@@ -21,7 +24,6 @@ APlayerCharacterBase::APlayerCharacterBase()
 
 	//创建新的BuffState
 	PlayerBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
-	//PlayerBuffState = NewObject<UBuffStateComponent>(TEXT("CurrentBuffState"));
 	
 }
 
@@ -40,7 +42,7 @@ void APlayerCharacterBase::PickableItemsRemove(AItemBase * item)
 
 
 //获得背包
-TArray<AItemBase*> APlayerCharacterBase::GetBag()
+TArray<FItemInBag> APlayerCharacterBase::GetBag()
 {
 	return Bag;
 }
@@ -52,24 +54,56 @@ bool APlayerCharacterBase::IsBagFull()
 	return Bag.Num() < FullBagNum ? false : true;
 }
 
-//按下拾取键尝试
+//-------------------------Pick------------------------------
+//Try to pick item
 void APlayerCharacterBase::TryPick()
 {
 	if (PickableItems.Num() > 0) {
+		//Is bag full? & item can be picked
 		if (PickableItems.Last()->bCanBePicked && (!IsBagFull())) {
 			PickSuccess();
 		}
 	}
 }
 
-//拾取成功
+//Pick Successful
 void APlayerCharacterBase::PickSuccess()
 {
-	Bag.Add(PickableItems.Last());
+	FItemInBag NewItem;
+	NewItem.ItemBuffState = PickableItems.Last()->GetBuffState();
+	NewItem.ItemType = PickableItems.Last()->ItemKind;
 
-	PickableItems.Last()->BePicked(this);
-	PickableItems.Pop();
+	//判断捡起的物品的种类
+	if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_MagicStock) {
+
+		AMagicStock* CurrentStock = Cast<AMagicStock>(PickableItems.Last());
+		if (CurrentStock) {
+			NewItem.MagicStockLevel = CurrentStock->MagicStockLevel;
+			NewItem.MagicStockType = CurrentStock->MagicStockType;
+		}
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a magic stock!"));
+			NewItem.MagicStockLevel = 0;
+		}
+	}
+	else if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_Tresure) {
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a treasure!"));
+			NewItem.MagicStockLevel = 0;
+		}
+	}
+	else if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_Catalyst) {
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a Catalyst!"));
+
+		}
+	}
+
+	Bag.Add(NewItem);
+
+	PickableItems.Pop()->BePicked(this);
 }
+//-----------------------------------------------------------
 
 void APlayerCharacterBase::StartJump()
 {
@@ -81,6 +115,33 @@ void APlayerCharacterBase::StopJump()
 	bPressedJump = false;
 }
 
+
+void APlayerCharacterBase::DropLastItem()
+{
+	FItemInBag NewItem = Bag.Pop();
+	if (NewItem.ItemType == EItemKindsEnum::VE_MagicStock) {
+
+		GetWorld()->SpawnActor<AMagicStock>();
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a MagicStock!"));
+			NewItem.MagicStockLevel = 0;
+		}
+	}
+	else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
+		GetWorld()->SpawnActor<ATreasure>();
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Treasure!"));
+			NewItem.MagicStockLevel = 0;
+		}
+	}
+	else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
+		GetWorld()->SpawnActor<ACatalyst>();
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Catalyst!"));
+
+		}
+	}
+}
 
 UBuffStateComponent * APlayerCharacterBase::GetBuffState()
 {
@@ -102,6 +163,7 @@ void APlayerCharacterBase::BeginPlay()
 
 	//Init BuffState.
 	AddInstanceComponent(PlayerBuffState);
+
 	if (GetBuffState()) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Playerbuffstate exist."));
@@ -123,7 +185,7 @@ void APlayerCharacterBase::Tick(float DeltaTime)
 }
 
 
-// 调用后将功能绑定到输入
+//Bind the input function
 void APlayerCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -139,9 +201,12 @@ void APlayerCharacterBase::SetupPlayerInputComponent(class UInputComponent* Play
 	//设置拾取绑定
 	PlayerInputComponent->BindAction("Pick", IE_Pressed, this, &APlayerCharacterBase::TryPick);
 
-	// 设置“动作”绑定。
+	//设置跳跃绑定
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacterBase::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacterBase::StopJump);
+
+	//Drop Binding
+	PlayerInputComponent->BindAction("Drop", IE_Pressed, this, &APlayerCharacterBase::DropLastItem);
 }
 
 void APlayerCharacterBase::MoveForward(float Value)

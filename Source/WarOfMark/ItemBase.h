@@ -8,6 +8,11 @@
 
 class USphereComponent;
 class APlayerCharacterBase;
+
+class UBuffStateComponent;
+enum class EItemKindsEnum : uint8;
+
+
 UCLASS()
 class WAROFMARK_API AItemBase : public AActor
 {
@@ -20,10 +25,19 @@ public:
 	//被拾取时调用函数
 	void BePicked(APlayerCharacterBase* player);
 
-	//可被拾取：在地上
+	//Bool: Can be Picked
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	bool bCanBePicked;
-	//可被丢弃：在背包中
+	//Bool: Can be droped
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	bool bCanBeDroped;
+
+
+	//派生类的枚举类型
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	EItemKindsEnum ItemKind;
+
+	UBuffStateComponent* GetBuffState();
 
 
 protected:
@@ -39,8 +53,12 @@ protected:
 	USphereComponent* SphereComp;
 
 	//临近的所有玩家
-	UPROPERTY(EditAnywhere, Category = "Attribute")
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<APlayerCharacterBase*> NearlyPlayers;
+
+	//Item carried BuffStateComponent
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UBuffStateComponent* ItemBuffState;
 
 
 

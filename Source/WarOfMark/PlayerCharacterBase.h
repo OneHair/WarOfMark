@@ -9,6 +9,29 @@
 
 class AItemBase;
 class UBuffStateComponent;
+enum class EItemKindsEnum : uint8;
+enum class EMagicStockEnum : uint8;
+
+
+USTRUCT(BlueprintType)
+struct FItemInBag
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EItemKindsEnum ItemType;
+
+	UPROPERTY(EditAnywhere)
+	EMagicStockEnum MagicStockType;
+
+
+	UPROPERTY(EditAnywhere)
+	int MagicStockLevel;
+
+	UPROPERTY(EditAnywhere)
+	UBuffStateComponent* ItemBuffState;
+		
+};
 
 UCLASS()
 class WAROFMARK_API APlayerCharacterBase : public ACharacter
@@ -24,7 +47,8 @@ public:
 	//可拾取物品栈移除
 	void PickableItemsRemove(AItemBase* item);
 
-	TArray<AItemBase*> GetBag();
+	//Get Bag
+	TArray<FItemInBag> GetBag();
 
 	//获取背包是否已满
 	bool IsBagFull();
@@ -46,6 +70,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int InitMoveSpeed;
 
+	//Get PlayerBuffState
 	UBuffStateComponent* GetBuffState();
 
 	
@@ -56,15 +81,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//可拾取物品栈
+	//Can be picked items stack
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<AItemBase*> PickableItems;
 
-	//背包数组
+	//Create bag (FItemInBag[])
 	UPROPERTY(EditAnywhere, Category = "Attributes")
-	TArray<AItemBase*> Bag;
+	TArray<FItemInBag> Bag;
 
-	//背包满数量
+	//The full bag number
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int FullBagNum;
 
@@ -92,9 +117,13 @@ public:
 
 	// 按下按键时设置跳跃标记。
 	UFUNCTION()
-		void StartJump();
+	void StartJump();
 
 	// 松开按键时清除跳跃标记。
 	UFUNCTION()
-		void StopJump();
+	void StopJump();
+
+	//Drop the last item in bag.
+	UFUNCTION()
+	void DropLastItem();
 };
