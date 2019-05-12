@@ -34,7 +34,7 @@ public:
 
 
 	//派生类的枚举类型
-	UPROPERTY(EditAnywhere, Category = "Attributes")
+	//UPROPERTY(EditAnywhere, Category = "Attributes")
 	EItemKindsEnum ItemKind;
 
 	UBuffStateComponent* GetBuffState();
@@ -44,15 +44,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//SM
+	//Static Mesh
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
-	//球形碰撞
+	//Sphere Collision
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 
-	//临近的所有玩家
+	//All players nearly
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<APlayerCharacterBase*> NearlyPlayers;
 

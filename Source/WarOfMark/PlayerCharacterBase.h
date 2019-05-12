@@ -8,6 +8,9 @@
 
 
 class AItemBase;
+class ACatalyst;
+class AMagicStock;
+class ATreasure;
 class UBuffStateComponent;
 enum class EItemKindsEnum : uint8;
 enum class EMagicStockEnum : uint8;
@@ -18,10 +21,10 @@ struct FItemInBag
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere)
+	//UPROPERTY(EditAnywhere)
 	EItemKindsEnum ItemType;
 
-	UPROPERTY(EditAnywhere)
+	//UPROPERTY(EditAnywhere)
 	EMagicStockEnum MagicStockType;
 
 
@@ -73,7 +76,6 @@ public:
 	//Get PlayerBuffState
 	UBuffStateComponent* GetBuffState();
 
-	
 
 
 
@@ -97,8 +99,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	UBuffStateComponent* PlayerBuffState;
 
-	
-
+	TSubclassOf<ACatalyst> BPVAR_Catalyst;
+	TSubclassOf<AMagicStock> BPVAR_MagicStock;
+	TSubclassOf<ATreasure> BPVAR_Treasure;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

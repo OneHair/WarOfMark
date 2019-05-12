@@ -24,6 +24,24 @@ APlayerCharacterBase::APlayerCharacterBase()
 
 	//创建新的BuffState
 	PlayerBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
+
+
+	
+	static ConstructorHelpers::FObjectFinder<UBlueprint> BP_CatalystTemp(TEXT("Blueprint'/Game/Blueprint/Environment/Items/BP_Catalyst.BP_Catalyst'"));
+	if (BP_CatalystTemp.Object)
+	{
+		BPVAR_Catalyst = (UClass*)BP_CatalystTemp.Object->GeneratedClass;
+	}
+	static ConstructorHelpers::FObjectFinder<UBlueprint> BP_TreasureTemp(TEXT("Blueprint'/Game/Blueprint/Environment/Items/BP_Treasure.BP_Treasure'"));
+	if (BP_TreasureTemp.Object)
+	{
+		BPVAR_Treasure = (UClass*)BP_TreasureTemp.Object->GeneratedClass;
+	}
+	static ConstructorHelpers::FObjectFinder<UBlueprint> BP_MagicStockTemp(TEXT("Blueprint'/Game/Blueprint/Environment/Items/BP_MagicStock.BP_MagicStock'"));
+	if (BP_MagicStockTemp.Object)
+	{
+		BPVAR_MagicStock = (UClass*)BP_MagicStockTemp.Object->GeneratedClass;
+	}
 	
 }
 
@@ -118,27 +136,28 @@ void APlayerCharacterBase::StopJump()
 
 void APlayerCharacterBase::DropLastItem()
 {
-	FItemInBag NewItem = Bag.Pop();
-	if (NewItem.ItemType == EItemKindsEnum::VE_MagicStock) {
-
-		GetWorld()->SpawnActor<AMagicStock>();
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a MagicStock!"));
-			NewItem.MagicStockLevel = 0;
+	if (Bag.Num() > 0) {
+		FItemInBag NewItem = Bag.Pop();
+		if (NewItem.ItemType == EItemKindsEnum::VE_MagicStock) {
+			GetWorld()->SpawnActor<AMagicStock>(BPVAR_MagicStock, GetActorLocation(), GetActorRotation());
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a MagicStock!"));
+				NewItem.MagicStockLevel = 0;
+			}
 		}
-	}
-	else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
-		GetWorld()->SpawnActor<ATreasure>();
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Treasure!"));
-			NewItem.MagicStockLevel = 0;
+		else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
+			GetWorld()->SpawnActor<ATreasure>(BPVAR_Treasure, GetActorLocation(), GetActorRotation());
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Treasure!"));
+				NewItem.MagicStockLevel = 0;
+			}
 		}
-	}
-	else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
-		GetWorld()->SpawnActor<ACatalyst>();
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Catalyst!"));
+		else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
+			GetWorld()->SpawnActor<ACatalyst>(BPVAR_Catalyst, GetActorLocation(), GetActorRotation());
+			if (GEngine) {
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a BP_Catalyst!"));
 
+			}
 		}
 	}
 }
