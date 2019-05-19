@@ -16,6 +16,29 @@ UBuffStateComponent::UBuffStateComponent()
 }
 
 
+void UBuffStateComponent::BuffStateAdd(UBuffStateComponent* AnotherBuffState)
+{
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Buff State Add!"));
+	}
+	//修正该BuffState组件所带的参数
+	Hp += AnotherBuffState->Hp;
+	Armor += AnotherBuffState->Armor;
+	Vertigo += AnotherBuffState->Vertigo;
+	Silence += AnotherBuffState->Silence;
+	MoveSpeed += AnotherBuffState->MoveSpeed;
+}
+
+void UBuffStateComponent::BuffStateDec(UBuffStateComponent* AnotherBuffState)
+{
+	//修正该BuffState组件所带的参数
+	Hp -= AnotherBuffState->Hp;
+	Armor -= AnotherBuffState->Armor;
+	Vertigo -= AnotherBuffState->Vertigo;
+	Silence -= AnotherBuffState->Silence;
+	MoveSpeed -= AnotherBuffState->MoveSpeed;
+}
+
 // Called when the game starts
 void UBuffStateComponent::BeginPlay()
 {

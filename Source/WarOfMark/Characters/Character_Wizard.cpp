@@ -3,7 +3,7 @@
 
 #include "Character_Wizard.h"
 
-AMagicBase* ACharacter_Wizard::GenerateMagic(AMagicStock* stock1, AMagicStock* stock2, AMagicStock* stock3)
+AMagicBase* ACharacter_Wizard::GenerateMagic(AItemBase* MagicStock1, AItemBase* MagicStock2, AItemBase* MagicStock3)
 {
 	return nullptr;
 }

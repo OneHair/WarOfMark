@@ -14,7 +14,7 @@ ATreasure::ATreasure()
 	ItemKind = EItemKindsEnum::VE_Tresure;
 
 	//test****************
-	if (GetBuffState()) {
-		GetBuffState()->MoveSpeed = 100;
+	if (ItemBuffState) {
+		ItemBuffState->MoveSpeed = 100;
 	}
 }

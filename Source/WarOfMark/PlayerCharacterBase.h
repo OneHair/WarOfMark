@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/*
+SSW create & write
+*/
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,6 +14,7 @@ class ACatalyst;
 class AMagicStock;
 class ATreasure;
 class UBuffStateComponent;
+class AMagicBase;
 enum class EItemKindsEnum : uint8;
 enum class EMagicStockEnum : uint8;
 
@@ -73,8 +76,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int InitMoveSpeed;
 
-	//Get PlayerBuffState
-	UBuffStateComponent* GetBuffState();
+	//Player carried BuffStateComponent
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UBuffStateComponent* PlayerBuffState;
+
+
+	//Virtual Function: Generate Magic
+	virtual AMagicBase* GenerateMagic(AItemBase* MagicStock1, AItemBase* MagicStock2, AItemBase* MagicStock3);
 
 
 
@@ -95,13 +103,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int FullBagNum;
 
-	//Player carried BuffStateComponent
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
-	UBuffStateComponent* PlayerBuffState;
+	
 
 	TSubclassOf<ACatalyst> BPVAR_Catalyst;
 	TSubclassOf<AMagicStock> BPVAR_MagicStock;
 	TSubclassOf<ATreasure> BPVAR_Treasure;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

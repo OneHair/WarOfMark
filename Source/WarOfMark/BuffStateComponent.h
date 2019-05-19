@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/*
+SSW create & write
+*/
 #pragma once
 
 #include "CoreMinimal.h"
@@ -27,6 +29,11 @@ public:
 	float Silence;
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	float MoveSpeed;
+
+	//Increase another buff state function
+	void BuffStateAdd(UBuffStateComponent* AnotherBuffState);
+	//Decrease another buff state function
+	void BuffStateDec(UBuffStateComponent* AnotherBuffState);
 
 protected:
 	// Called when the game starts

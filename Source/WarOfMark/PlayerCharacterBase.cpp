@@ -88,7 +88,8 @@ void APlayerCharacterBase::TryPick()
 void APlayerCharacterBase::PickSuccess()
 {
 	FItemInBag NewItem;
-	NewItem.ItemBuffState = PickableItems.Last()->GetBuffState();
+	//保存被拾取物体的BuffState和ItemKind
+	NewItem.ItemBuffState = PickableItems.Last()->ItemBuffState;
 	NewItem.ItemType = PickableItems.Last()->ItemKind;
 
 	//判断捡起的物品的种类
@@ -101,20 +102,20 @@ void APlayerCharacterBase::PickSuccess()
 		}
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a magic stock!"));
-			NewItem.MagicStockLevel = 0;
 		}
+		PlayerBuffState->BuffStateAdd(NewItem.ItemBuffState);
 	}
 	else if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_Tresure) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a treasure!"));
-			NewItem.MagicStockLevel = 0;
 		}
+		PlayerBuffState->BuffStateAdd(NewItem.ItemBuffState);
 	}
 	else if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_Catalyst) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("I pick a Catalyst!"));
-
 		}
+		PlayerBuffState->BuffStateAdd(NewItem.ItemBuffState);
 	}
 
 	Bag.Add(NewItem);
@@ -133,39 +134,43 @@ void APlayerCharacterBase::StopJump()
 	bPressedJump = false;
 }
 
-
+//Drop One Item
 void APlayerCharacterBase::DropLastItem()
 {
 	if (Bag.Num() > 0) {
 		FItemInBag NewItem = Bag.Pop();
 		if (NewItem.ItemType == EItemKindsEnum::VE_MagicStock) {
-			GetWorld()->SpawnActor<AMagicStock>(BPVAR_MagicStock, GetActorLocation(), GetActorRotation());
+			AMagicStock* SpawnedActor = GetWorld()->SpawnActor<AMagicStock>(BPVAR_MagicStock, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a MagicStock!"));
-				NewItem.MagicStockLevel = 0;
 			}
+			SpawnedActor->MagicStockLevel = NewItem.MagicStockLevel;
+			SpawnedActor->MagicStockType = NewItem.MagicStockType;
+			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
 		}
 		else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
-			GetWorld()->SpawnActor<ATreasure>(BPVAR_Treasure, GetActorLocation(), GetActorRotation());
+			ATreasure* SpawnedActor = GetWorld()->SpawnActor<ATreasure>(BPVAR_Treasure, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Treasure!"));
-				NewItem.MagicStockLevel = 0;
 			}
+			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
+			PlayerBuffState->BuffStateDec(NewItem.ItemBuffState);
 		}
 		else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
-			GetWorld()->SpawnActor<ACatalyst>(BPVAR_Catalyst, GetActorLocation(), GetActorRotation());
+			ACatalyst* SpawnedActor = GetWorld()->SpawnActor<ACatalyst>(BPVAR_Catalyst, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a BP_Catalyst!"));
-
 			}
+			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
 		}
 	}
 }
 
-UBuffStateComponent * APlayerCharacterBase::GetBuffState()
+AMagicBase* APlayerCharacterBase::GenerateMagic(AItemBase* MagicStock1, AItemBase* MagicStock2, AItemBase* MagicStock3)
 {
-	if (PlayerBuffState) {
-		return PlayerBuffState;
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, TEXT("CharacterBase Generate Magic~"));
+
 	}
 	return nullptr;
 }
@@ -176,23 +181,23 @@ void APlayerCharacterBase::BeginPlay()
 	Super::BeginPlay();
 
 	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("We are using PlayerCharacterBase!"));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, TEXT("We are using PlayerCharacterBase!"));
 		
 	}
 
 	//Init BuffState.
 	AddInstanceComponent(PlayerBuffState);
 
-	if (GetBuffState()) {
+	if (PlayerBuffState) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Playerbuffstate exist."));
 
 		}
-		GetBuffState()->Hp = InitHp;
-		GetBuffState()->Armor = InitArmor;
-		GetBuffState()->MoveSpeed = InitMoveSpeed;
-		GetBuffState()->Vertigo = 0;
-		GetBuffState()->Silence = 0;
+		PlayerBuffState->Hp = InitHp;
+		PlayerBuffState->Armor = InitArmor;
+		PlayerBuffState->MoveSpeed = InitMoveSpeed;
+		PlayerBuffState->Vertigo = 0;
+		PlayerBuffState->Silence = 0;
 	}
 }
 
@@ -232,8 +237,8 @@ void APlayerCharacterBase::MoveForward(float Value)
 {
 	// 明确哪个方向是“前进”，并记录玩家试图向此方向移动。
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	if (GetBuffState()) {
-		Value *= (GetBuffState()->MoveSpeed) / 100;
+	if (PlayerBuffState) {
+		Value *= (PlayerBuffState->MoveSpeed) / 100;
 	}
 	AddMovementInput(Direction, Value);
 }
@@ -242,8 +247,8 @@ void APlayerCharacterBase::MoveRight(float Value)
 {
 	// 明确哪个方向是“向右”，并记录玩家试图向此方向移动。
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	if (GetBuffState()) {
-		Value *= (GetBuffState()->MoveSpeed) / 100;
+	if (PlayerBuffState) {
+		Value *= (PlayerBuffState->MoveSpeed) / 100;
 	}
 	AddMovementInput(Direction, Value);
 }

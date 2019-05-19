@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/*
+SSW create & write
+*/
 #pragma once
 
 #include "CoreMinimal.h"
@@ -37,7 +39,9 @@ public:
 	//UPROPERTY(EditAnywhere, Category = "Attributes")
 	EItemKindsEnum ItemKind;
 
-	UBuffStateComponent* GetBuffState();
+	//Item carried BuffStateComponent
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	UBuffStateComponent* ItemBuffState;
 
 
 protected:
@@ -56,9 +60,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<APlayerCharacterBase*> NearlyPlayers;
 
-	//Item carried BuffStateComponent
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
-	UBuffStateComponent* ItemBuffState;
 
 
 

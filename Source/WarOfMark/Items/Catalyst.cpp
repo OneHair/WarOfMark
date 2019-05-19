@@ -14,7 +14,7 @@ ACatalyst::ACatalyst()
 	ItemKind = EItemKindsEnum::VE_Catalyst;
 
 	//test****************
-	if (GetBuffState()) {
-		GetBuffState()->Armor = 100;
+	if (ItemBuffState) {
+		ItemBuffState->Armor = 100;
 	}
 }

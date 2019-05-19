@@ -36,30 +36,13 @@ AItemBase::AItemBase()
 	ItemBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
 }
 
-UBuffStateComponent* AItemBase::GetBuffState()
-{
-	if (ItemBuffState) {
-		return ItemBuffState;
-	}
-	return nullptr;
-}
 
 // Called when the game starts or when spawned
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Init BuffState.
 	AddInstanceComponent(ItemBuffState);
-
-	if (GetBuffState()) {
-		GetBuffState()->Hp = 0;
-		GetBuffState()->Armor = 0;
-		GetBuffState()->MoveSpeed = 0;
-		GetBuffState()->Vertigo = 0;
-		GetBuffState()->Silence = 0;
-	}
-	
 }
 
 // Called every frame
