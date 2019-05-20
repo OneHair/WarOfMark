@@ -6,8 +6,9 @@ SSW create & write
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Enum/ItemKindsEnum.h"
+#include "Items/MagicStock.h"
 #include "PlayerCharacterBase.generated.h"
-
 
 class AItemBase;
 class ACatalyst;
@@ -15,28 +16,31 @@ class AMagicStock;
 class ATreasure;
 class UBuffStateComponent;
 class AMagicBase;
-enum class EItemKindsEnum : uint8;
-enum class EMagicStockEnum : uint8;
-
+//enum class EItemKindsEnum : uint8;
+//enum class EMagicStockEnum : uint8;
 
 USTRUCT(BlueprintType)
 struct FItemInBag
 {
 	GENERATED_USTRUCT_BODY()
 
-	//UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EItemKindsEnum ItemType;
 
-	//UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EMagicStockEnum MagicStockType;
 
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int MagicStockLevel;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UBuffStateComponent* ItemBuffState;
 		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* ItemIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText ItemName;
 };
 
 UCLASS()
@@ -84,7 +88,9 @@ public:
 	//Virtual Function: Generate Magic
 	virtual AMagicBase* GenerateMagic(AItemBase* MagicStock1, AItemBase* MagicStock2, AItemBase* MagicStock3);
 
-
+	//Create bag (FItemInBag[])
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Attributes")
+	TArray<FItemInBag> Bag;
 
 
 protected:
@@ -95,16 +101,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	TArray<AItemBase*> PickableItems;
 
-	//Create bag (FItemInBag[])
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-	TArray<FItemInBag> Bag;
+	
 
 	//The full bag number
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int FullBagNum;
 
 	
-
+	//Blueprint VARs
 	TSubclassOf<ACatalyst> BPVAR_Catalyst;
 	TSubclassOf<AMagicStock> BPVAR_MagicStock;
 	TSubclassOf<ATreasure> BPVAR_Treasure;
