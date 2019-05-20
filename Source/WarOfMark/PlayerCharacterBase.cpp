@@ -91,6 +91,8 @@ void APlayerCharacterBase::PickSuccess()
 	//保存被拾取物体的BuffState和ItemKind
 	NewItem.ItemBuffState = PickableItems.Last()->ItemBuffState;
 	NewItem.ItemType = PickableItems.Last()->ItemKind;
+	NewItem.ItemIcon = PickableItems.Last()->ItemIcon;
+	NewItem.ItemName = PickableItems.Last()->ItemName;
 
 	//判断捡起的物品的种类
 	if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_MagicStock) {
@@ -147,6 +149,9 @@ void APlayerCharacterBase::DropLastItem()
 			SpawnedActor->MagicStockLevel = NewItem.MagicStockLevel;
 			SpawnedActor->MagicStockType = NewItem.MagicStockType;
 			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
+
+			SpawnedActor->ItemIcon = NewItem.ItemIcon;
+			SpawnedActor->ItemName = NewItem.ItemName;
 		}
 		else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
 			ATreasure* SpawnedActor = GetWorld()->SpawnActor<ATreasure>(BPVAR_Treasure, GetActorLocation(), GetActorRotation());
@@ -155,6 +160,9 @@ void APlayerCharacterBase::DropLastItem()
 			}
 			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
 			PlayerBuffState->BuffStateDec(NewItem.ItemBuffState);
+
+			SpawnedActor->ItemIcon = NewItem.ItemIcon;
+			SpawnedActor->ItemName = NewItem.ItemName;
 		}
 		else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
 			ACatalyst* SpawnedActor = GetWorld()->SpawnActor<ACatalyst>(BPVAR_Catalyst, GetActorLocation(), GetActorRotation());
@@ -162,6 +170,9 @@ void APlayerCharacterBase::DropLastItem()
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a BP_Catalyst!"));
 			}
 			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
+
+			SpawnedActor->ItemIcon = NewItem.ItemIcon;
+			SpawnedActor->ItemName = NewItem.ItemName;
 		}
 	}
 }
