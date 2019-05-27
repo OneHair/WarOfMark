@@ -22,11 +22,13 @@ APlayerCharacterBase::APlayerCharacterBase()
 	InitArmor = 0;
 	InitMoveSpeed = 50;
 
+	GlobalDropNum = 0;
+
 	//创建新的BuffState
 	PlayerBuffState = CreateDefaultSubobject<UBuffStateComponent>(TEXT("CurrentBuffState"));
 
 
-	
+	//Create new blueprint variable
 	static ConstructorHelpers::FObjectFinder<UBlueprint> BP_CatalystTemp(TEXT("Blueprint'/Game/Blueprint/Environment/Items/BP_Catalyst.BP_Catalyst'"));
 	if (BP_CatalystTemp.Object)
 	{
@@ -93,6 +95,7 @@ void APlayerCharacterBase::PickSuccess()
 	NewItem.ItemType = PickableItems.Last()->ItemKind;
 	NewItem.ItemIcon = PickableItems.Last()->ItemIcon;
 	NewItem.ItemName = PickableItems.Last()->ItemName;
+	NewItem.DropNum = GlobalDropNum++;
 
 	//判断捡起的物品的种类
 	if (PickableItems.Last()->ItemKind == EItemKindsEnum::VE_MagicStock) {
@@ -137,42 +140,49 @@ void APlayerCharacterBase::StopJump()
 }
 
 //Drop One Item
-void APlayerCharacterBase::DropLastItem()
+void APlayerCharacterBase::DropItemInBag(FItemInBag AnItem)
 {
-	if (Bag.Num() > 0) {
-		FItemInBag NewItem = Bag.Pop();
-		if (NewItem.ItemType == EItemKindsEnum::VE_MagicStock) {
+	int IndexTemp = 0;
+	for (; IndexTemp < Bag.Num(); IndexTemp++) {
+		if (AnItem.DropNum == Bag[IndexTemp].DropNum)
+		{
+			break;
+		}
+	}
+	if (1) {
+		Bag.RemoveAt(IndexTemp);
+		if (AnItem.ItemType == EItemKindsEnum::VE_MagicStock) {
 			AMagicStock* SpawnedActor = GetWorld()->SpawnActor<AMagicStock>(BPVAR_MagicStock, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a MagicStock!"));
 			}
-			SpawnedActor->MagicStockLevel = NewItem.MagicStockLevel;
-			SpawnedActor->MagicStockType = NewItem.MagicStockType;
-			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
+			SpawnedActor->MagicStockLevel = AnItem.MagicStockLevel;
+			SpawnedActor->MagicStockType = AnItem.MagicStockType;
+			SpawnedActor->ItemBuffState = AnItem.ItemBuffState;
 
-			SpawnedActor->ItemIcon = NewItem.ItemIcon;
-			SpawnedActor->ItemName = NewItem.ItemName;
+			SpawnedActor->ItemIcon = AnItem.ItemIcon;
+			SpawnedActor->ItemName = AnItem.ItemName;
 		}
-		else if (NewItem.ItemType == EItemKindsEnum::VE_Tresure) {
+		else if (AnItem.ItemType == EItemKindsEnum::VE_Tresure) {
 			ATreasure* SpawnedActor = GetWorld()->SpawnActor<ATreasure>(BPVAR_Treasure, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a Treasure!"));
 			}
-			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
-			PlayerBuffState->BuffStateDec(NewItem.ItemBuffState);
+			SpawnedActor->ItemBuffState = AnItem.ItemBuffState;
+			PlayerBuffState->BuffStateDec(AnItem.ItemBuffState);
 
-			SpawnedActor->ItemIcon = NewItem.ItemIcon;
-			SpawnedActor->ItemName = NewItem.ItemName;
+			SpawnedActor->ItemIcon = AnItem.ItemIcon;
+			SpawnedActor->ItemName = AnItem.ItemName;
 		}
-		else if (NewItem.ItemType == EItemKindsEnum::VE_Catalyst) {
+		else if (AnItem.ItemType == EItemKindsEnum::VE_Catalyst) {
 			ACatalyst* SpawnedActor = GetWorld()->SpawnActor<ACatalyst>(BPVAR_Catalyst, GetActorLocation(), GetActorRotation());
 			if (GEngine) {
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("I drop a BP_Catalyst!"));
 			}
-			SpawnedActor->ItemBuffState = NewItem.ItemBuffState;
+			SpawnedActor->ItemBuffState = AnItem.ItemBuffState;
 
-			SpawnedActor->ItemIcon = NewItem.ItemIcon;
-			SpawnedActor->ItemName = NewItem.ItemName;
+			SpawnedActor->ItemIcon = AnItem.ItemIcon;
+			SpawnedActor->ItemName = AnItem.ItemName;
 		}
 	}
 }
@@ -239,9 +249,6 @@ void APlayerCharacterBase::SetupPlayerInputComponent(class UInputComponent* Play
 	//设置跳跃绑定
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacterBase::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacterBase::StopJump);
-
-	//Drop Binding
-	PlayerInputComponent->BindAction("Drop", IE_Pressed, this, &APlayerCharacterBase::DropLastItem);
 }
 
 void APlayerCharacterBase::MoveForward(float Value)

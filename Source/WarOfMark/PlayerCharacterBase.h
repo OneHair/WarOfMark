@@ -41,6 +41,8 @@ struct FItemInBag
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText ItemName;
+
+	int DropNum;
 };
 
 UCLASS()
@@ -58,6 +60,7 @@ public:
 	void PickableItemsRemove(AItemBase* item);
 
 	//Get Bag
+	UFUNCTION()
 	TArray<FItemInBag> GetBag();
 
 	//获取背包是否已满
@@ -80,6 +83,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	int InitMoveSpeed;
 
+	//Global DropNum to control the new ItemInBag->DropNum
+	int GlobalDropNum;
+
 	//Player carried BuffStateComponent
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	UBuffStateComponent* PlayerBuffState;
@@ -92,6 +98,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Attributes")
 	TArray<FItemInBag> Bag;
 
+
+	//Drop the last item in bag.
+	UFUNCTION()
+	void DropItemInBag(FItemInBag AnItem);
 
 protected:
 	// Called when the game starts or when spawned
@@ -137,7 +147,5 @@ public:
 	UFUNCTION()
 	void StopJump();
 
-	//Drop the last item in bag.
-	UFUNCTION()
-	void DropLastItem();
+	
 };
